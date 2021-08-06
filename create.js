@@ -1,6 +1,6 @@
 //-h, --host               IP/Hostname for the database.
 //-d, --database           Database name
-// -u, --user               Username for database.
+//-u, --user               Username for database.
 //-x, --pass               Password for database. If specified without providing
 //-p, --port               Port number for database (not for sqlite). Ex:
 //-e, --dialect            The dialect/engine(ex: mysql)
@@ -115,7 +115,53 @@ function getController(name,param){
         .catch(err => {
           console.log(err)
         })
-    }; `
+    }; 
+    exports.create_a_${_name} = function(req, res) {
+      try {
+        const nuevo =   models.${_name}.create(req.body);
+        res.status(200); 
+        res.send('ok'+req.body);
+      } catch (error) {
+        res.status(400);        
+        res.send('{ "message":"no se pudo realizar el insert"}');
+      }      
+        
+  }; 
+    exports.update_a_${_name} = function(req, res) {
+      try {
+       
+         models.${_name}.update(
+          // Values to update
+          req.body ,
+          { // Clause
+              where: 
+              {
+                  id: req.body.id
+              }
+          }
+      ).then(count => {
+          console.log('Rows updated ' + count);
+      }); 
+   
+       
+        res.send('Rows updated ');
+      } catch (error) {
+        res.status(400);        
+        res.send('{ "message":"no se pudo realizar el update"}');
+      }      
+        
+  }; 
+  exports.list_filter_${_name} = function(req, res) {
+    models.${_name}.findAll(  {where : req.body } )
+    .then(v => {
+      var jsonString = JSON.stringify(v);       
+      res.send(v);
+    
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  }; `
 
 }
 async function _createEstructura(sequelize){
@@ -190,7 +236,10 @@ function createRoutes(controllerPath,tablas){
     tablas.forEach(a=>{
         contenido+=`//--${a}---\n`;
         contenido+=`var ${a.toLowerCase()}Controller = require("../controllers/${a.toLowerCase()}Controller");\n`;
-        contenido+=`app.route('/${a.toLowerCase()}').get(${a.toLowerCase()}Controller.list_all_${a});\n`;
+        contenido+=`app.route('/${a.toLowerCase()}').get(${a.toLowerCase()}Controller.list_all_${a})\n`;
+        contenido+=`.post(${a.toLowerCase()}Controller.create_a_${a})\n`
+        contenido+=`.put(${a.toLowerCase()}Controller.update_a_${a});\n`;
+        contenido+=`app.route('/${a.toLowerCase()}/filter').post(${a.toLowerCase()}Controller.list_filter_${a})\n`;
         contenido+=`\n`;
         contenido+=`\n`;
     });
