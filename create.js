@@ -233,13 +233,17 @@ function createDB(controllerPath){
 /** crea a el routes  instanciando los controllers */
 function createRoutes(controllerPath,tablas){
     var contenido=`\n`;
+    contenido+=`const auth= require('../auth/auth');\n`;
+    contenido+=`\n`;    
+    contenido+=`app.route('/autenticar').post(auth.authentication);\n`;
+    contenido+=`\n`;
     tablas.forEach(a=>{
         contenido+=`//--${a}---\n`;
         contenido+=`var ${a.toLowerCase()}Controller = require("../controllers/${a.toLowerCase()}Controller");\n`;
-        contenido+=`app.route('/${a.toLowerCase()}').get(${a.toLowerCase()}Controller.list_all_${a})\n`;
-        contenido+=`.post(${a.toLowerCase()}Controller.create_a_${a})\n`
-        contenido+=`.put(${a.toLowerCase()}Controller.update_a_${a});\n`;
-        contenido+=`app.route('/${a.toLowerCase()}/filter').post(${a.toLowerCase()}Controller.list_filter_${a})\n`;
+        contenido+=`app.route('/${a.toLowerCase()}').get(auth.rp(app),${a.toLowerCase()}Controller.list_all_${a})\n`;
+        contenido+=`.post(auth.rp(app),${a.toLowerCase()}Controller.create_a_${a})\n`
+        contenido+=`.put(auth.rp(app),${a.toLowerCase()}Controller.update_a_${a});\n`;
+        contenido+=`app.route('/${a.toLowerCase()}/filter').post(auth.rp(app),${a.toLowerCase()}Controller.list_filter_${a})\n`;
         contenido+=`\n`;
         contenido+=`\n`;
     });
